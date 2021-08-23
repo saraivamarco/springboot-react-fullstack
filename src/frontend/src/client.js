@@ -28,3 +28,16 @@ export const deleteStudent = studentId =>
         method: 'DELETE'
     }).then(checkStatus);
 
+export const getStudent = studentId =>
+    fetch(`api/v1/students/${studentId}`, {
+        method: 'GET'
+    }).then(checkStatus);
+
+export const updateStudent = student =>
+    fetch("api/v1/students", {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify(student)
+    }).then(checkStatus);

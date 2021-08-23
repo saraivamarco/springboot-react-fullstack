@@ -1,7 +1,7 @@
-import {Table, Tag, Space, Empty, Spin, Button, Radio, Popconfirm, Image} from 'antd';
+import {Table, Empty, Spin, Button, Radio, Popconfirm, Image, Form, Input} from 'antd';
 
 import {useState, useEffect} from 'react'
-import {getAllStudents, deleteStudent, addNewStudent} from "./client";
+import {getAllStudents, deleteStudent} from "./client";
 import {Layout, Menu, Breadcrumb} from 'antd';
 import {
     DesktopOutlined,
@@ -9,7 +9,7 @@ import {
     FileOutlined,
     TeamOutlined,
     UserOutlined,
-    LoadingOutlined, DownloadOutlined, PlusOutlined,
+    LoadingOutlined, PlusOutlined,
 } from '@ant-design/icons';
 
 import './App.css';
@@ -17,8 +17,10 @@ import './App.css';
 import StudentDrawerForm from "./StudentDrawerForm";
 import Avatar from "antd/es/avatar/avatar";
 import {errorNotification, successNotification} from "./Notification";
+import Modal from "antd/es/modal/Modal";
 const {Header, Content, Footer, Sider} = Layout;
 const {SubMenu} = Menu;
+
 const TheAvatar = ({name}) => {
     let trim = name.trim();
     if (name.trim().length === 0) {
@@ -49,62 +51,83 @@ const removeStudent = (studentId, callback) => {
 }
 
 
-const columns = fetchStudents => [
-    {
-        title: '',
-        dataIndex: 'avatar',
-        key: 'avatar',
-        render: (text, student) =>
-            <TheAvatar name={student.name}/>
-    },
-    {
-        title: 'Id',
-        dataIndex: 'id',
-        key: 'id',
-    },
-    {
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
-    },
-    {
-        title: 'Email',
-        dataIndex: 'email',
-        key: 'email',
-    },
-    {
-        title: 'Gender',
-        dataIndex: 'gender',
-        key: 'gender',
-    },
-    {
-        title: 'Actions',
-        key: 'actions',
-        render: (text, student) =>
-            <Radio.Group >
-                <Popconfirm
-                    placement='topRight'
-                    title={`Are you sure you want to delete ${student.name}`}
-                    onConfirm={() => removeStudent(student.id, fetchStudents)}
-                    onText='Yes'
-                    canceltext='No'>
-                    <Radio.Button value="small">Delete</Radio.Button>
-                </Popconfirm>
-                <Radio.Button value="small">Edit</Radio.Button>
-            </Radio.Group>
-    },
-
-];
-
 const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
-function App() {
+const App = () => {
+    const showModal = () => {
+        setIsModalVisible(true);
+    };
+
+    const handleOk = () => {
+        setIsModalVisible(false);
+    };
+
+    const handleCancel = () => {
+        setIsModalVisible(false);
+    };
+
     const [collapsed, setCollapsed] = useState(false)
     const [students, setStudents] = useState([]);
     const [fetching, setFetching] = useState(true);
     const [showDrawer, setShowDrawer] = useState(false);
-    const fetchStudents = () =>
-        getAllStudents()
+    const [isModalVisible, setIsModalVisible] = useState(false);
+
+
+
+
+    const columns = fetchStudents => [
+        {
+            title: '',
+            dataIndex: 'avatar',
+            key: 'avatar',
+            render: (text, student) =>
+                <TheAvatar name={student.name}/>
+        },
+        {
+            title: 'Id',
+            dataIndex: 'id',
+            key: 'id',
+        },
+        {
+            title: 'Name',
+            dataIndex: 'name',
+            key: 'name',
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+        },
+        {
+            title: 'Gender',
+            dataIndex: 'gender',
+            key: 'gender',
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (text, student) =>
+                <Radio.Group >
+                    <Popconfirm
+                        placement='topRight'
+                        title={`Are you sure you want to delete ${student.name}`}
+                        onConfirm={() => removeStudent(student.id, fetchStudents)}
+                        onText='Yes'
+                        canceltext='No'>
+                        <Radio.Button value="small">Delete
+                        </Radio.Button>
+                    </Popconfirm>
+                    <>
+                        <Radio.Button
+                            onClick= {showModal}
+                            value="small">Edit
+                        </Radio.Button>
+                    </>
+                </Radio.Group>
+        },
+    ];
+
+    const fetchStudents = () => getAllStudents()
         .then(res => res.json())
         .then(data => {
             console.log(data);
@@ -125,6 +148,43 @@ function App() {
         fetchStudents();
     }, []);
 
+    const renderModal = () => {
+        return <>
+            <Modal title="Edit Student" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+                <Form
+                    name="basic"
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    initialValues={{ remember: true }}>
+                    <Form.Item
+                        label="Name"
+                        name="name"
+                        rules={[{ required: true }]}>
+                        <Input  defaultValue="mysite" />
+                    </Form.Item>
+                    <Form.Item
+                        label="Email"
+                        name="email"
+                        rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        label="Gender"
+                        name="gender"
+                        rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+
+                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                        <Button type="primary" htmlType="submit">
+                            Submit
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </>
+    }
+
     const renderStudents = () => {
         if(fetching) {
             return <Spin indicator={antIcon}/>
@@ -143,7 +203,6 @@ function App() {
                     </Button>
                     <Empty/>
                 </>
-
         }
         return <>
             <StudentDrawerForm
@@ -151,17 +210,18 @@ function App() {
                 setShowDrawer={setShowDrawer}
                 fetchStudents={fetchStudents}
             />
+
             <Table
                 dataSource={students}
                 columns={columns(fetchStudents)}
                 bordered
                 title={()=>
-                        <Button
-                            onClick={() => setShowDrawer(!showDrawer)}
-                            type="primary" shape="round" icon={<PlusOutlined />} size="small">
-                                      Add New Student
-                        </Button>
-                      }
+                    <Button
+                        onClick={() => setShowDrawer(!showDrawer)}
+                        type="primary" shape="round" icon={<PlusOutlined />} size="small">
+                        Add New Student
+                    </Button>
+                  }
                 pagination={{pageSize:400}}
                 scroll={{y:500}}
                 rowKey={(student) => student.id}
@@ -202,6 +262,7 @@ function App() {
                     <Breadcrumb.Item>Bill</Breadcrumb.Item>
                 </Breadcrumb>
                 <div className="site-layout-background" style={{padding: 24, minHeight: 360}}>
+                    {renderModal()}
                     {renderStudents()}
                 </div>
             </Content>
@@ -213,5 +274,5 @@ function App() {
     </Layout>
 }
 
-    export default App;
+export default App;
 
