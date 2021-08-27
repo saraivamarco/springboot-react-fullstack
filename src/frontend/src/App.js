@@ -1,4 +1,4 @@
-import {Table, Tag, Space, Empty, Spin, Button, Radio, Popconfirm, Image} from 'antd';
+import {Table, Tag, Space, Empty, Spin, Button, Radio, Popconfirm, Image, Divider} from 'antd';
 
 import {useState, useEffect} from 'react'
 import {getAllStudents, deleteStudent, addNewStudent} from "./client";
@@ -209,6 +209,13 @@ function App() {
                 <Image width={25}
                        src="https://user-images.githubusercontent.com/8493884/130139309-4b2793b1-7f65-403b-9493-1085c386dca1.png"
                 /> By Marco Saraiva da Silva</Footer>
+            <Divider>
+                <a
+                    target="_blank"
+                    href="https://www.linkedin.com/in/marco-saraiva-silva/">
+                    Click here to access my LinkedIn
+                </a>
+            </Divider>
         </Layout>
     </Layout>
 }
